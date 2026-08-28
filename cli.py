@@ -14,10 +14,6 @@ import threading
 import time
 import uuid
 
-from dotenv import load_dotenv
-
-load_dotenv()
-
 from tools.agent_runner import run_agent
 from utils.job_manager import job_manager
 
