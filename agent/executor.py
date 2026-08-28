@@ -198,7 +198,10 @@ class StepExecutor:
                     f"_decide_tool attempt {attempt}/3 failed: {exc}",
                     extra={"event": "decide_tool_retry", "attempt": attempt},
                 )
-        raise last_error  # all attempts exhausted
+
+        if last_error:
+            raise last_error
+        raise RuntimeError("Failed to decide tool after 3 attempts")
 
     def _run_tool(self, tool: ToolSpec, tool_input: dict[str, Any]) -> dict:
         """Call a tool function and return its payload dict."""
