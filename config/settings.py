@@ -27,7 +27,6 @@ from pydantic_settings import BaseSettings
 load_dotenv()
 
 
-
 class Settings(BaseSettings):
     # ── LLM — Groq (primary, free, fast) ─────────────────────────────────────
     # Can be a single key, or multiple keys separated by commas for rotation
