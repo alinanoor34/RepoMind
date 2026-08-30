@@ -36,7 +36,7 @@ dev = [
 ]
 
 [tool.setuptools]
-packages = ["api", "agent", "config", "prompts", "tools", "memory"]
+packages = ["api", "agent", "config", "prompts", "tools", "memory", "orchestration", "utils"]
 
 [tool.black]
 line-length = 100
@@ -58,3 +58,4 @@ ignore = ["E501"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
