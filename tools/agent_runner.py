@@ -259,7 +259,7 @@ def validate_credentials(github_token: str, llm_provider: str, llm_api_key: str)
     if llm_provider == "groq":
         try:
             probe_llm = ChatGroq(
-                model="llama-3.3-70b-versatile",
+                model=get_settings().llm_model,
                 api_key=SecretStr(llm_api_key),
                 temperature=0,
             )

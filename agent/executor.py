@@ -223,18 +223,36 @@ class StepExecutor:
     # ── Internal helpers ─────────────────────────────────────────────────────
 
     def _decide_tool(self, step: PlanStep, previous_summary: str) -> ToolDecision:
-        """Ask the LLM which tool to call for this step."""
+        """Ask the LLM which tool to call for this step.
+
+        Some models occasionally return malformed JSON when the tool_input
+        payload is large (e.g. a full file's contents embedded as a string).
+        Retry a few times before giving up, since this is usually transient.
+        """
         chain = self.tool_prompt | self.llm.with_structured_output(ToolDecision)
-        decision = chain.invoke(
-            {
-                "tool_descriptions": self.tool_descriptions,
-                "step": json.dumps(step.model_dump(), indent=2),
-                "previous_summary": previous_summary or "(none)",
-            }
-        )
-        if isinstance(decision, ToolDecision):
-            return decision
-        return ToolDecision.model_validate(decision)
+        last_error: Exception | None = None
+        for attempt in range(1, 4):  # up to 3 attempts
+            try:
+                decision = chain.invoke(
+                    {
+                        "tool_descriptions": self.tool_descriptions,
+                        "step": json.dumps(step.model_dump(), indent=2),
+                        "previous_summary": previous_summary or "(none)",
+                    }
+                )
+                if isinstance(decision, ToolDecision):
+                    return decision
+                return ToolDecision.model_validate(decision)
+            except Exception as exc:  # noqa: BLE001 — malformed JSON, etc.
+                last_error = exc
+                logger.warning(
+                    f"_decide_tool attempt {attempt}/3 failed: {exc}",
+                    extra={"event": "decide_tool_retry", "attempt": attempt},
+                )
+
+        if last_error:
+            raise last_error
+        raise RuntimeError("Failed to decide tool after 3 attempts")
 
     def _select_and_validate_tool(
         self, decision: ToolDecision, step: PlanStep, repo_context: dict[str, Any]

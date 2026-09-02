@@ -16,8 +16,15 @@ import os
 import threading
 from functools import lru_cache
 
+from dotenv import load_dotenv
 from pydantic import SecretStr, model_validator
 from pydantic_settings import BaseSettings
+
+# Load RepoMind/.env into the process environment. Must happen before
+# get_settings() reads os.getenv("GROQ_API_KEY") below — without this,
+# api/main.py never loads .env and the key silently falls back to the
+# invalid "local-dev-key" placeholder.
+load_dotenv()
 
 
 class Settings(BaseSettings):
