@@ -6,6 +6,7 @@ Tests for the multi-agent pipeline:
   - TesterAgent (unit)
   - MultiAgentOrchestrator (integration — all agents mocked)
 """
+
 from __future__ import annotations
 
 from unittest.mock import MagicMock, patch
@@ -21,7 +22,6 @@ from orchestration.messages import CoderMessage, ReviewerMessage, TesterMessage
 from orchestration.orchestrator import MultiAgentOrchestrator
 from orchestration.task_state import AgentDecision, TaskState
 
-
 # ── Shared helpers ────────────────────────────────────────────────────────────
 
 
@@ -33,9 +33,7 @@ def _make_step(step_id: int = 1) -> PlanStep:
         target_function="StepExecutor.execute",
         new_logic="Add structured logging at the start of each step.",
         expected_output="logger.info called once per step",
-        acceptance_criteria=(
-            "Unit test asserts logger.info is called with event='step_start'."
-        ),
+        acceptance_criteria=("Unit test asserts logger.info is called with event='step_start'."),
     )
 
 
@@ -214,15 +212,13 @@ class TestMultiAgentOrchestrator:
         orch = self._make_orch()
         fc = _make_file_change()
         orch.planner.plan = MagicMock(return_value=_make_plan())
-        orch.coder.code = MagicMock(return_value=CoderMessage(
-            file_changes=[fc], success=True
-        ))
-        orch.reviewer.review = MagicMock(return_value=ReviewerMessage(
-            approved=True, issues=[], feedback=""
-        ))
-        orch.tester.test = MagicMock(return_value=TesterMessage(
-            passed=True, failures=[], feedback=""
-        ))
+        orch.coder.code = MagicMock(return_value=CoderMessage(file_changes=[fc], success=True))
+        orch.reviewer.review = MagicMock(
+            return_value=ReviewerMessage(approved=True, issues=[], feedback="")
+        )
+        orch.tester.test = MagicMock(
+            return_value=TesterMessage(passed=True, failures=[], feedback="")
+        )
         state = orch.run("sess-1", "add logging to executor")
         assert state.status == "done"
         assert state.iteration == 1
@@ -233,16 +229,18 @@ class TestMultiAgentOrchestrator:
         orch = self._make_orch()
         fc = _make_file_change()
         orch.planner.plan = MagicMock(return_value=_make_plan())
-        orch.coder.code = MagicMock(return_value=CoderMessage(
-            file_changes=[fc], success=True
-        ))
-        orch.reviewer.review = MagicMock(side_effect=[
-            ReviewerMessage(approved=False, issues=["Missing import"], feedback="Add import os"),
-            ReviewerMessage(approved=True, issues=[], feedback=""),
-        ])
-        orch.tester.test = MagicMock(return_value=TesterMessage(
-            passed=True, failures=[], feedback=""
-        ))
+        orch.coder.code = MagicMock(return_value=CoderMessage(file_changes=[fc], success=True))
+        orch.reviewer.review = MagicMock(
+            side_effect=[
+                ReviewerMessage(
+                    approved=False, issues=["Missing import"], feedback="Add import os"
+                ),
+                ReviewerMessage(approved=True, issues=[], feedback=""),
+            ]
+        )
+        orch.tester.test = MagicMock(
+            return_value=TesterMessage(passed=True, failures=[], feedback="")
+        )
         state = orch.run("sess-2", "add logging")
         assert state.status == "done"
         assert state.iteration == 2
@@ -253,16 +251,16 @@ class TestMultiAgentOrchestrator:
         orch = self._make_orch()
         fc = _make_file_change()
         orch.planner.plan = MagicMock(return_value=_make_plan())
-        orch.coder.code = MagicMock(return_value=CoderMessage(
-            file_changes=[fc], success=True
-        ))
-        orch.reviewer.review = MagicMock(return_value=ReviewerMessage(
-            approved=True, issues=[], feedback=""
-        ))
-        orch.tester.test = MagicMock(side_effect=[
-            TesterMessage(passed=False, failures=["Edge case missing"], feedback="Add test"),
-            TesterMessage(passed=True, failures=[], feedback=""),
-        ])
+        orch.coder.code = MagicMock(return_value=CoderMessage(file_changes=[fc], success=True))
+        orch.reviewer.review = MagicMock(
+            return_value=ReviewerMessage(approved=True, issues=[], feedback="")
+        )
+        orch.tester.test = MagicMock(
+            side_effect=[
+                TesterMessage(passed=False, failures=["Edge case missing"], feedback="Add test"),
+                TesterMessage(passed=True, failures=[], feedback=""),
+            ]
+        )
         state = orch.run("sess-3", "add logging")
         assert state.status == "done"
         assert state.iteration == 2
@@ -272,12 +270,10 @@ class TestMultiAgentOrchestrator:
         orch = self._make_orch(max_iterations=3)
         fc = _make_file_change()
         orch.planner.plan = MagicMock(return_value=_make_plan())
-        orch.coder.code = MagicMock(return_value=CoderMessage(
-            file_changes=[fc], success=True
-        ))
-        orch.reviewer.review = MagicMock(return_value=ReviewerMessage(
-            approved=False, issues=["Still broken"], feedback="Fix it"
-        ))
+        orch.coder.code = MagicMock(return_value=CoderMessage(file_changes=[fc], success=True))
+        orch.reviewer.review = MagicMock(
+            return_value=ReviewerMessage(approved=False, issues=["Still broken"], feedback="Fix it")
+        )
         state = orch.run("sess-4", "add logging")
         assert state.status == "failed"
         assert state.iteration == 3
@@ -286,9 +282,9 @@ class TestMultiAgentOrchestrator:
         """If Coder produces nothing, abort without reviewing."""
         orch = self._make_orch()
         orch.planner.plan = MagicMock(return_value=_make_plan())
-        orch.coder.code = MagicMock(return_value=CoderMessage(
-            file_changes=[], success=False, error="Tool not found"
-        ))
+        orch.coder.code = MagicMock(
+            return_value=CoderMessage(file_changes=[], success=False, error="Tool not found")
+        )
         orch.reviewer.review = MagicMock()
         state = orch.run("sess-5", "add logging")
         assert state.status == "failed"
@@ -299,15 +295,13 @@ class TestMultiAgentOrchestrator:
         orch = self._make_orch()
         fc = _make_file_change()
         orch.planner.plan = MagicMock(return_value=_make_plan())
-        orch.coder.code = MagicMock(return_value=CoderMessage(
-            file_changes=[fc], success=True
-        ))
-        orch.reviewer.review = MagicMock(return_value=ReviewerMessage(
-            approved=True, issues=[], feedback=""
-        ))
-        orch.tester.test = MagicMock(return_value=TesterMessage(
-            passed=True, failures=[], feedback=""
-        ))
+        orch.coder.code = MagicMock(return_value=CoderMessage(file_changes=[fc], success=True))
+        orch.reviewer.review = MagicMock(
+            return_value=ReviewerMessage(approved=True, issues=[], feedback="")
+        )
+        orch.tester.test = MagicMock(
+            return_value=TesterMessage(passed=True, failures=[], feedback="")
+        )
         state = orch.run("sess-6", "add logging")
         agents_logged = {d.agent for d in state.decision_log}
         assert "planner" in agents_logged

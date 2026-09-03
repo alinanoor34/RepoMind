@@ -96,9 +96,7 @@ class MultiAgentOrchestrator:
         state.status = "planning"
         plan = self._run_planner(state, project_map)
         state.plan = plan
-        state.log_decision(
-            "planner", "create_plan", f"{len(plan.steps)} steps generated"
-        )
+        state.log_decision("planner", "create_plan", f"{len(plan.steps)} steps generated")
         logger.info(
             f"Planner produced {len(plan.steps)} steps",
             extra={"event": "plan_ready", "steps": [s.task for s in plan.steps]},
@@ -205,9 +203,7 @@ class MultiAgentOrchestrator:
 
     # ── Private helpers ───────────────────────────────────────────────────────
 
-    def _run_planner(
-        self, state: TaskState, project_map: dict[str, Any] | None
-    ):
+    def _run_planner(self, state: TaskState, project_map: dict[str, Any] | None):
         """Build session context and call the TaskPlanner."""
         raw_context = self.memory.get_context_messages(state.session_id)
         context = [self._system_message] + list(raw_context)

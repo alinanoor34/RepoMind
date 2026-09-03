@@ -78,10 +78,7 @@ class ReviewerAgent:
     def _format_plan(state: TaskState) -> str:
         if not state.plan:
             return "(no plan)"
-        return "\n".join(
-            f"Step {s.id}: {s.task}  →  {s.target_function}"
-            for s in state.plan.steps
-        )
+        return "\n".join(f"Step {s.id}: {s.task}  →  {s.target_function}" for s in state.plan.steps)
 
     @staticmethod
     def _format_changes(state: TaskState) -> str:

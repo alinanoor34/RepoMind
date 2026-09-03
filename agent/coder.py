@@ -51,13 +51,9 @@ class CoderAgent:
             if state.test_feedback:
                 feedback_parts.append(f"Tester feedback: {state.test_feedback}")
             if feedback_parts:
-                self.executor.memory_context = [
-                    HumanMessage(content="\n".join(feedback_parts))
-                ]
+                self.executor.memory_context = [HumanMessage(content="\n".join(feedback_parts))]
 
-        output: ExecutorOutput = self.executor.execute(
-            state.plan, session_id=state.session_id
-        )
+        output: ExecutorOutput = self.executor.execute(state.plan, session_id=state.session_id)
 
         changed_files = [c.filename for c in output.all_file_changes]
         state.log_decision(
@@ -79,7 +75,5 @@ class CoderAgent:
         return CoderMessage(
             file_changes=output.all_file_changes,
             success=bool(output.all_file_changes),
-            notes=(
-                f"Iteration {state.iteration}: {len(output.all_file_changes)} file(s) changed."
-            ),
+            notes=(f"Iteration {state.iteration}: {len(output.all_file_changes)} file(s) changed."),
         )
