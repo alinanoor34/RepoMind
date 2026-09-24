@@ -3,6 +3,7 @@
 import pytest
 from unittest.mock import MagicMock, patch
 
+
 class TestSampleAutonomousGenerated:
     def test_new_util_success(self):
         """Verify success path for new_util."""
