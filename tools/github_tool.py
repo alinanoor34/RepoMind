@@ -55,7 +55,7 @@ def clone_repository(repo_url: str, local_path: str | Path, branch: str | None =
         if len(scheme_sep) == 2 and "@" in scheme_sep[1]:
             embedded_token = scheme_sep[1].split("@", 1)[0] or None
 
-    clone_kwargs: dict[str,Any] = {"depth": 1, "single_branch": True, "no_tags": True}
+    clone_kwargs: dict[str, Any] = {"depth": 1, "single_branch": True, "no_tags": True}
     if branch:
         clone_kwargs["branch"] = branch
 
